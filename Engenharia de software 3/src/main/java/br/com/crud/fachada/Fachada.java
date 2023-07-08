@@ -1,11 +1,13 @@
 package br.com.crud.fachada;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import br.com.crud.controller.Conexao;
 import br.com.crud.dao.CandidatoDAO;
 import br.com.crud.dao.CursoDAO;
 import br.com.crud.dao.IDAO;
@@ -24,9 +26,11 @@ public class Fachada implements IFachada {
 	
 	private Map<String, Map<String, List<IStrategy>>> mainMap;
 	
-	 private Map<String, List<IStrategy>> mapaRNS;
+	private Map<String, List<IStrategy>> mapaRNS;
 		
-		private Map<String, IDAO> daos;
+	private Map<String, IDAO> daos;
+		
+		
 		
 		public Fachada() {
 			
@@ -60,17 +64,18 @@ public class Fachada implements IFachada {
 			rnsCandidatoAlterar.add(vTel);
 			rnsCandidatoAlterar.add(vObg);
 			
-			
 			mapaRNS.put("SALVAR", rnsCandidatoSalvar);
 			mapaRNS.put("ALTERAR", rnsCandidatoAlterar);
 			
 			mainMap.put(Candidato.class.getName(), mapaRNS);
-			//mapaRNS.put(Funcionario.class.getName(), rnsFuncionario);
 			
-			daos.put(Candidato.class.getName(), new CandidatoDAO());
-			daos.put(Curso.class.getName(), new CursoDAO());
-			daos.put(EntidadeDominio.class.getName(), new CandidatoDAO());
-		
+			try (Connection connection = Conexao.getConnection()) {
+			daos.put(Candidato.class.getName(), new CandidatoDAO(connection));
+			daos.put(Curso.class.getName(), new CursoDAO(connection));
+			daos.put(EntidadeDominio.class.getName(), new CandidatoDAO(connection));
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 			
 		}
 

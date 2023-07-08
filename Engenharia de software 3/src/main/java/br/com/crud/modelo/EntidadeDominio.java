@@ -4,13 +4,13 @@ import java.time.LocalDate;
 
 public class EntidadeDominio implements IEntidade {
 
-	private int id;
+	private Integer id;
 
 	private LocalDate dtCadastro;
 
 	public EntidadeDominio() {}
 	
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 

@@ -6,25 +6,35 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.sql.DataSource;
+
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
 
 public class Conexao {
+
+	private static DataSource dataSource;
 	
-	
-	public Connection getConnection(){
-        Connection conexao = null;
-        
-        try {
+	public static Connection getConnection() throws SQLException{
+   
+		try {
             Class.forName("org.postgresql.Driver");
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Conexao.class.getName()).log(Level.SEVERE, null, ex);
         }
-        try {
-            conexao = DriverManager.getConnection("jdbc:postgresql://localhost:5432/Es3","postgres","1234");
-        } catch (SQLException ex) {
-            System.out.println("erro no localhost"+ex);
-        }
         
-        return conexao;
+        ComboPooledDataSource comboPooledDataSource = new ComboPooledDataSource();
+		 comboPooledDataSource.setJdbcUrl("jdbc:postgresql://localhost:5432/Es3");
+		 comboPooledDataSource.setUser("postgres");
+		 comboPooledDataSource.setPassword("1234");
+
+		 comboPooledDataSource.setMaxPoolSize(50);
+		 
+		 dataSource = comboPooledDataSource;
+		
+		 return dataSource.getConnection();
     }
+	
+	
 
 }

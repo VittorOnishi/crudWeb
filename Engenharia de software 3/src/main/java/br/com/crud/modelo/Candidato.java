@@ -26,7 +26,7 @@ public class Candidato extends Pessoa{
 	}
 
 
-	public Candidato(int id) {
+	public Candidato(Integer id) {
 		setId(id);
 	}
 

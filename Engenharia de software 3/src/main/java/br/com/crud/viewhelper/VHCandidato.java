@@ -122,13 +122,14 @@ public class VHCandidato implements IViewHelper {
 			Endereco endereco = new Endereco(request.getParameter("logradouro"), request.getParameter("numero"),
 					request.getParameter("complemento"), request.getParameter("cep"), cidade);
 			
+			cnd = new Candidato(request.getParameter("nome"), endereco);
+			
 			Filiacao paterna = new Filiacao(request.getParameter("Filiacao paterna"), "Pai");
 			cnd.setListaFiliacao(paterna);
 			
 			Filiacao materna = new Filiacao(request.getParameter("Filiacao materna"), "Mae");
 			cnd.setListaFiliacao(materna);
 			
-			cnd = new Candidato(request.getParameter("nome"), endereco);
 			cnd.setDtCadastro(LocalDate.parse(request.getParameter("dtCad")));
 			cnd.setId(cnd_id);
 			
