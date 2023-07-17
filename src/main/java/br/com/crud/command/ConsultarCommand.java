@@ -17,18 +17,6 @@ public class ConsultarCommand implements ICommand{
 		
 		 List<EntidadeDominio> listaCandidato = fac.consultar(entidade);
 		 
-		 for(EntidadeDominio ent : listaCandidato) {
-			 
-			 Candidato candidato = (Candidato) ent;
-			 
-//			for(Filiacao fil : candidato.getListaFiliacao()) {
-//				
-//				System.out.println(fil.getNome());
-//				
-//			}
-			 
-		 }
-		 
 		 Resultado rstd = new Resultado();
 		 
 		 rstd.setEntidades(listaCandidato);

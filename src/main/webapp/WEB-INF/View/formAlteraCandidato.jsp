@@ -5,10 +5,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-</head>
 <meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<title>Alteração de cadastro</title>
+
+<link rel="stylesheet" href="formAlteraCandidato.css">
+
 <style>
+body{
+background-color: #FFFFFF;
+box-sizing: border-box;
+color: #000000;
+}
+
 form {
 	max-width: 600px;
 	margin: 0 auto;
@@ -64,7 +72,6 @@ form a.botao-voltar {
 }
 </style>
 </head>
-<body>
 <body>
 
 	<form action="${linkController}" method="post">

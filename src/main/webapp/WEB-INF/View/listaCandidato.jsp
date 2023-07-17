@@ -8,7 +8,7 @@
 <html>
 <head>
 	<meta charset="ISO-8859-1">
-	<title>Java Standard Taglib</title>
+	<title>Consulta de cadastros</title>
 
 	<style>
 form {

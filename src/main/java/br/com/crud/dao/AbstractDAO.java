@@ -8,6 +8,7 @@ import br.com.crud.controller.Conexao;
 public class AbstractDAO {
 	
 	protected Connection con;
+	protected Conexao conexao;
 	
 	public AbstractDAO(Connection con){
 		 this.con = con;
@@ -17,7 +18,8 @@ public class AbstractDAO {
 		try {
 			
 			if(con == null || con.isClosed())
-				con = Conexao.getConnection();
+				
+				con = conexao.recuperarConexao();
 			
 		}catch (SQLException e) {
 			e.printStackTrace();

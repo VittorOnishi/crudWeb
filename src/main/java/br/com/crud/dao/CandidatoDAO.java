@@ -6,9 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Objects;
 
-import br.com.crud.controller.Conexao;
 import br.com.crud.modelo.Candidato;
 import br.com.crud.modelo.Cidade;
 import br.com.crud.modelo.Curso;
@@ -32,7 +30,9 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 		Pessoa pessoa = (Pessoa) entidade;
 		Candidato candidato = (Candidato) pessoa;
 		StringBuilder sql = new StringBuilder();
-
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		
 		openConnection();
 		con.setAutoCommit(false);
 
@@ -41,7 +41,9 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 		sql.append("cnd_cep, cnd_cidade, cnd_estado, cnd_datacad)");
 		sql.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-		try (PreparedStatement st = con.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);) {
+		try {
+			
+		st = con.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
 
 			st.setString(1, candidato.getNome());
 
@@ -59,9 +61,10 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 			st.setString(8, candidato.getEndereco().getCidade().getDescricao());
 			st.setString(9, candidato.getEndereco().getCidade().getEstado().getDescricao());
 			st.setObject(10, candidato.getDtCadastro());
-			st.executeUpdate();
-
-			try (ResultSet rs = st.getGeneratedKeys()) {
+			st.execute();
+			
+			
+			rs = st.getGeneratedKeys();
 				while (rs.next()) {
 					int idCandidato = 0;
 
@@ -73,9 +76,7 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 					salvarMatricula(candidato);
 
 				}
-
-			}
-			st.execute();
+			
 			con.commit();
 
 		} catch (Exception e) {
@@ -87,6 +88,7 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 			e.printStackTrace();
 		} finally {
 			try {
+				st.close();
 				con.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -95,12 +97,16 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 	}
 
 	public void salvarTelefone(Candidato candidato) throws SQLException {
-
+		
+		PreparedStatement st = null;
+		ResultSet rs = null;
 		StringBuilder sql = new StringBuilder();
 		sql.append("INSERT INTO telefones (tel_numero, tel_tipo, ");
 		sql.append("candidatos_cnd_id) VALUES (?, ?, ?)");
 
-		try (PreparedStatement st = con.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+		try {
+			
+			st = con.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
 
 			for (Telefone telefone : candidato.getListadeTelefones()) {
 
@@ -110,18 +116,29 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 
 				st.execute();
 
-				ResultSet rs = st.getGeneratedKeys();
+				rs = st.getGeneratedKeys();
 				int tel_id = 0;
-				if (rs.next())
+				
+				while(rs.next()) {
 					tel_id = rs.getInt(1);
 				telefone.setId(tel_id);
+				}
 
 			}
 
 		} catch (Exception e) {
+			try {
+				con.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 			e.printStackTrace();
-			System.out.println("Rollback executado em salvar telefones");
-			con.rollback();
+		} finally {
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 	}
@@ -131,8 +148,12 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 		StringBuilder sql = new StringBuilder();
 		sql.append("INSERT INTO matricula(candidatos_cnd_id, cursos_crs_id)");
 		sql.append(" VALUES (?, ?)");
+		PreparedStatement st = null;
+		
 
-		try (PreparedStatement st = con.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS)) {
+		try {
+			
+			 st = con.prepareStatement(sql.toString(), Statement.RETURN_GENERATED_KEYS);
 
 			for (Matricula mat : candidato.getListadeMatriculas()) {
 
@@ -142,9 +163,18 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 			}
 
 		} catch (Exception e) {
+			try {
+				con.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 			e.printStackTrace();
-			System.out.println("Rollback executado em salvar matricula");
-			con.rollback();
+		} finally {
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 
 	}
@@ -155,6 +185,9 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 		Endereco endereco = null;
 		Cidade cidade = null;
 		Estado estado = null;
+		
+		PreparedStatement st = null;
+		ResultSet rs = null;
 
 		ArrayList<EntidadeDominio> listaDeCandidatos = new ArrayList<>();
 		ArrayList<Telefone> listaDeTelefones = new ArrayList<>();
@@ -178,7 +211,7 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 
 		try{
 			
-			PreparedStatement st = con.prepareStatement(sql.toString());
+			st = con.prepareStatement(sql.toString());
 			
 			if (candidato.getNome() != null && !candidato.getNome().isEmpty()) {
 				st.setString(1, "%" + candidato.getNome() + "%");
@@ -189,11 +222,9 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 			}
 
 			st.executeQuery();
-
-			try (ResultSet rs = st.getResultSet()) {
-
+			rs = st.getResultSet(); 
 			
-				while (rs.next()) {
+			while (rs.next()) {
 
 					estado = new Estado(rs.getString("cnd_estado"));
 
@@ -233,11 +264,19 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 					}
 
 					listaDeCandidatos.add(candidato);
+					
+					
 				}
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}finally {
+		try {
+			st.close();
+			con.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-		}catch (SQLException ex) {
-			System.err.println("Erro ao listar candidato " + ex);
-		}
+	}
 		return listaDeCandidatos;
 	}
 
@@ -245,19 +284,21 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 
 		Filiacao paterna = null;
 		Filiacao materna = null;
+		ResultSet rs = null;
+		PreparedStatement st = null;
 
 		StringBuilder sql = new StringBuilder();
 		sql.append("Select cnd_filiacao_pat, cnd_filiacao_mat from candidatos where cnd_id = ?");
 
 		ArrayList<Filiacao> listaDeFiliacao = new ArrayList<>();
 
-		PreparedStatement st = con.prepareStatement(sql.toString());
+		st = con.prepareStatement(sql.toString());
 		
 			st.setInt(1, candidato.getId());
 
 			st.executeQuery();
 			
-			try (ResultSet rs = st.getResultSet()) {
+			rs = st.getResultSet();
 
 				while (rs.next()){
 
@@ -268,27 +309,27 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 					listaDeFiliacao.add(materna);
 				}
 
-			}
 		return listaDeFiliacao;
 	}
 
 	public ArrayList<Telefone> consultarTelefones(Candidato candidato) throws SQLException {
 
 		Telefone telefone = null;
+		ResultSet rs = null;
+		PreparedStatement st = null;
 
 		StringBuilder sql = new StringBuilder();
 		sql.append("Select * from telefones where candidatos_cnd_id = ? order by candidatos_cnd_id;");
 
 		ArrayList<Telefone> listaDeTelefones = new ArrayList<>();
 
-		PreparedStatement st = con.prepareStatement(sql.toString());
+		st = con.prepareStatement(sql.toString());
 
-			System.out.println(candidato.getId());
 			st.setInt(1, candidato.getId());
 			
 			st.executeQuery();
 
-			try (ResultSet rs = st.getResultSet()) {
+			rs = st.getResultSet(); 
 
 			while (rs.next()){
 
@@ -298,7 +339,7 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 				listaDeTelefones.add(telefone);
 
 			}
-		}
+			
 		return listaDeTelefones;	
 	}
 
@@ -306,6 +347,9 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 
 		Curso curso = null;
 		Matricula mat = null;
+		
+		ResultSet rs = null;
+		PreparedStatement st = null;
 
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT mat_id, crs_id, crs_nome from cursos inner join matricula ");
@@ -313,13 +357,13 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 
 		ArrayList<Matricula> listaDeMatriculas = new ArrayList<>();
 		
-		PreparedStatement st = con.prepareStatement(sql.toString());
+		st = con.prepareStatement(sql.toString());
 
 			st.setInt(1, candidato.getId());
 			
 			st.executeQuery();
 
-			try (ResultSet rs = st.getResultSet()) {
+			rs = st.getResultSet();
 
 			while (rs.next()) {
 
@@ -331,7 +375,6 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 				listaDeMatriculas.add(mat);
 
 			}
-		}
 		
 		return listaDeMatriculas;
 	}
@@ -341,13 +384,17 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 		openConnection();
 		Candidato candidato = (Candidato) entidade;
 		
+		PreparedStatement st = null;
+		
 		StringBuilder sql = new StringBuilder();
 		sql.append("update candidatos set cnd_nome=?, cnd_filiacao_pat=?, cnd_filiacao_mat=?, cnd_logradouro=?, cnd_numero=?");
 		sql.append(", cnd_complemento=?, cnd_cep=?, cnd_cidade=?, cnd_estado=? where cnd_id=?");
 
 			con.setAutoCommit(false);
 			
-			try (PreparedStatement st = con.prepareStatement(sql.toString())){
+		try {
+				
+			st = con.prepareStatement(sql.toString());
 				
 			st.setString(1, candidato.getNome());
 
@@ -380,6 +427,7 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 				e.printStackTrace();			
 			}finally{
 				try {
+					st.close();
 					con.close();
 				} catch (SQLException e) {
 					e.printStackTrace();
@@ -440,7 +488,7 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 
 		StringBuilder sql = new StringBuilder();
 		sql.append("delete from candidatos where cnd_id=?");
-		PreparedStatement st;
+		PreparedStatement st = null;
 		openConnection();
 		
 		try {
@@ -452,16 +500,21 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 			st.execute();
 			con.commit();
 			
-		}  catch (SQLException e) {
+		}catch (Exception e) {
 			try {
 				con.rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
-			e.printStackTrace();			
-		}finally{
-				con.close();		
-		}		
+			e.printStackTrace();
+		} finally {
+			try {
+				st.close();
+				con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 	}		
 
 	public void excluirTelefone(EntidadeDominio entidade) throws SQLException {
@@ -469,9 +522,25 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 		StringBuilder sql = new StringBuilder();
 		sql.append("delete from telefones where candidatos_cnd_id=?");
 		PreparedStatement st = null;
-		st = con.prepareStatement(sql.toString());
-		st.setInt(1, entidade.getId());
-		st.execute();
+		
+		try {
+			st = con.prepareStatement(sql.toString());
+			st.setInt(1, entidade.getId());
+			st.execute();
+		}catch (Exception e) {
+			try {
+				con.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		} finally {
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void excluirMatricula(EntidadeDominio entidade) throws SQLException {
@@ -479,10 +548,24 @@ public class CandidatoDAO extends AbstractDAO implements IDAO {
 		StringBuilder sql = new StringBuilder();
 		sql.append("delete from matricula where candidatos_cnd_id=?");
 		PreparedStatement st = null;
-		st = con.prepareStatement(sql.toString());
-		st.setInt(1, entidade.getId());
-		st.execute();
-
+		try {
+			st = con.prepareStatement(sql.toString());
+			st.setInt(1, entidade.getId());
+			st.execute();
+		}catch (Exception e) {
+			try {
+				con.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		} finally {
+			try {
+				st.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

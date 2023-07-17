@@ -14,13 +14,13 @@ import br.com.crud.dao.IDAO;
 import br.com.crud.modelo.Candidato;
 import br.com.crud.modelo.Curso;
 import br.com.crud.modelo.EntidadeDominio;
-import br.crud.com.strategy.GerarDataCad;
-import br.crud.com.strategy.IStrategy;
-import br.crud.com.strategy.ValidaFiliacao;
-import br.crud.com.strategy.ValidarCursos;
-import br.crud.com.strategy.ValidarDadosObrigatorios;
-import br.crud.com.strategy.ValidarDataAlteracao;
-import br.crud.com.strategy.ValidarTelefones;
+import br.com.crud.strategy.GerarDataCad;
+import br.com.crud.strategy.IStrategy;
+import br.com.crud.strategy.ValidaFiliacao;
+import br.com.crud.strategy.ValidarCursos;
+import br.com.crud.strategy.ValidarDadosObrigatorios;
+import br.com.crud.strategy.ValidarDataAlteracao;
+import br.com.crud.strategy.ValidarTelefones;
 
 public class Fachada implements IFachada {
 	
@@ -35,9 +35,7 @@ public class Fachada implements IFachada {
 		public Fachada() {
 			
 			mainMap = new HashMap<String, Map<String, List<IStrategy>>>();
-			
 			mapaRNS = new HashMap<String, List<IStrategy>>();
-			
 			daos = new HashMap<String, IDAO>();
 			
 			ValidaFiliacao vFiliacao = new ValidaFiliacao();
@@ -69,13 +67,12 @@ public class Fachada implements IFachada {
 			
 			mainMap.put(Candidato.class.getName(), mapaRNS);
 			
-			try (Connection connection = Conexao.getConnection()) {
+			Conexao conn = new Conexao();
+			Connection connection = conn.recuperarConexao();
+			
 			daos.put(Candidato.class.getName(), new CandidatoDAO(connection));
 			daos.put(Curso.class.getName(), new CursoDAO(connection));
 			daos.put(EntidadeDominio.class.getName(), new CandidatoDAO(connection));
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
 			
 		}
 

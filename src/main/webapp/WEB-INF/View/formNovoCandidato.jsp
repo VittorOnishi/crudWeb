@@ -6,10 +6,8 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<title>Insert title here</title>
+<title>Cadastro de candidatos</title>
 </head>
-<meta charset="ISO-8859-1">
-<title>Insert title here</title>
 <style>
 form {
 	max-width: 600px;
